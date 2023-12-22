@@ -5,23 +5,25 @@ import {
   Marker,
   Popup,
   useMap,
-  useMapEvent,
+  useMapEvents,
 } from "react-leaflet";
 import styles from "./Map.module.css";
 import { useEffect, useState } from "react";
 import { useCities } from "../contexts/CitiesContext";
-import { useGeolocaion } from "../hooks/useGeolocation";
+import { useGeolocation } from "../hooks/useGeolocation";
+import { useUrlPosition } from "../hooks/useUrlPosition";
 import Button from "./Button";
-import useUrlPosition from "../hooks/useUrlPosition";
+
 function Map() {
   const { cities } = useCities();
-  const [mapLat, mapLng] = useUrlPosition();
   const [mapPosition, setMapPosition] = useState([40, 0]);
   const {
     isLoading: isLoadingPosition,
-    position: geoLocationPosition,
+    position: geolocationPosition,
+
     getPosition,
-  } = useGeolocaion();
+  } = useGeolocation();
+  const [mapLat, mapLng] = useUrlPosition();
 
   useEffect(
     function () {
@@ -32,15 +34,15 @@ function Map() {
 
   useEffect(
     function () {
-      if (geoLocationPosition)
-        setMapPosition([geoLocationPosition.lng, geoLocationPosition.lat]);
+      if (geolocationPosition)
+        setMapPosition([geolocationPosition.lng, geolocationPosition.lat]);
     },
-    [geoLocationPosition]
+    [geolocationPosition]
   );
-
+  // console.log(cities);
   return (
     <div className={styles.mapContainer}>
-      {!geoLocationPosition && (
+      {!geolocationPosition && (
         <Button type="position" onClick={getPosition}>
           {isLoadingPosition ? "Loading..." : "use your position"}
         </Button>
@@ -82,7 +84,7 @@ function ChangeCenter({ position }) {
 function DetectClick() {
   const navigate = useNavigate();
 
-  useMapEvent({
+  useMapEvents({
     click: (e) => navigate(`form?lat=${e.latlng.lat}&lng=${e.latlng.lng}`),
   });
 }
